@@ -254,20 +254,7 @@ async def account_login(bot: Client, m: Message):
                     os.remove(thumb_path)
 
             except Exception as e:
-                if ".pdf" in url:
-                    await m.reply_text(
-                        f"{name1}", reply_markup=InlineKeyboardMarkup(
-                            [
-                                [
-                                InlineKeyboardButton("✜ OPEN PDF ✜" ,url=f"{url}") ]
-                            ]))
-                else:
-                    await m.reply_text(
-                        f"{name1}", reply_markup=InlineKeyboardMarkup(
-                            [
-                                [
-                                InlineKeyboardButton("✜ OPEN LECTURE  ✜" ,url=f"{url}") ]
-                            ]))
+                print("matbe")
                 continue
 
     except Exception as e:
