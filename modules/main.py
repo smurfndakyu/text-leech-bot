@@ -67,6 +67,8 @@ async def main():
             await asyncio.sleep(3600)  # Run forever, or until interrupted
     except (KeyboardInterrupt, SystemExit):
         await stop_bot()
+
+token="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NDc3NDA3NDYuNjc2LCJkYXRhIjp7Il9pZCI6IjYyZjhiMGUyYmMzN2E4MDAxODNmNDIyNSIsInVzZXJuYW1lIjoiODk1NTM0OTQ1MyIsImZpcnN0TmFtZSI6IkF0cmlrYSIsImxhc3ROYW1lIjoiIiwib3JnYW5pemF0aW9uIjp7Il9pZCI6IjVlYjM5M2VlOTVmYWI3NDY4YTc5ZDE4OSIsIndlYnNpdGUiOiJwaHlzaWNzd2FsbGFoLmNvbSIsIm5hbWUiOiJQaHlzaWNzd2FsbGFoIn0sImVtYWlsIjoiYXl1c2hyOTg1QGdtYWlsLmNvbSIsInJvbGVzIjpbIjViMjdiZDk2NTg0MmY5NTBhNzc4YzZlZiIsIjVjYzk1YTJlOGJkZTRkNjZkZTQwMGIzNyJdLCJjb3VudHJ5R3JvdXAiOiJJTiIsInR5cGUiOiJVU0VSIn0sImlhdCI6MTc0NzEzNTk0Nn0.8XY3W-H73SwWROMJ84SXdiqPMW8WV1tlKRHoEm33ccI"
     
 @bot.on_message(filters.command(["start"]))
 async def account_login(bot: Client, m: Message):
@@ -190,6 +192,9 @@ async def account_login(bot: Client, m: Message):
 
             elif 'videos.classplusapp' in url:
              url = requests.get(f'https://api.classplusapp.com/cams/uploader/video/jw-signed-url?url={url}', headers={'x-access-token': 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJpZCI6MzgzNjkyMTIsIm9yZ0lkIjoyNjA1LCJ0eXBlIjoxLCJtb2JpbGUiOiI5MTcwODI3NzQyODkiLCJuYW1lIjoiQWNlIiwiZW1haWwiOm51bGwsImlzRmlyc3RMb2dpbiI6dHJ1ZSwiZGVmYXVsdExhbmd1YWdlIjpudWxsLCJjb3VudHJ5Q29kZSI6IklOIiwiaXNJbnRlcm5hdGlvbmFsIjowLCJpYXQiOjE2NDMyODE4NzcsImV4cCI6MTY0Mzg4NjY3N30.hM33P2ai6ivdzxPPfm01LAd4JWv-vnrSxGXqvCirCSpUfhhofpeqyeHPxtstXwe0'}).json()['url']
+
+            elif '/master.mpd' in url:
+                https://pwplayer-38c1ae95b681.herokuapp.com/pw?url={url}&token={token}
 
             
             name1 = links[i][0].replace("\t", "").replace(":", "").replace("/", "").replace("+", "").replace("#", "").replace("|", "").replace("@", "").replace("*", "").replace(".", "").replace("https", "").replace("http", "").strip()
