@@ -68,8 +68,7 @@ HTML = """
 <body>
   <div class="player-container">
     <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
-    <div class="watermark">Powered by Team Flower Dm @Teamflowersupportfree_bot </div>
-  </div>
+    </div>
 
   <div class="controls">
     <button id="backwardBtn">⏪ 10s</button>
