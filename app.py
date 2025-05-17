@@ -2,103 +2,107 @@ from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
-HTML_TEMPLATE = """
+HTML = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>HLS Player</title>
-  <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <title>Aarambh Live By Team Flower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
-    .player-container { position: relative; width: 100%; height: 100%; background: #000; }
-    video { width: 100%; height: 100%; object-fit: contain; background: #000; }
-    .controls {
-      position: absolute; bottom: 20px; left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000; display: flex; gap: 10px;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 10px 15px; border-radius: 10px;
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .controls button, .controls select {
-      padding: 6px 12px; font-size: 14px;
-      background: #222; color: #fff;
-      border: none; border-radius: 5px; cursor: pointer;
+    .video-js {
+      width: 80vw;
+      max-width: 900px;
+      height: 45vw;
+      max-height: 506px;
     }
-    .controls button:hover, .controls select:hover {
-      background: #444;
+    #speedBtn {
+      margin-top: 10px;
+      background: #222;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #qualitySelect {
+      margin-top: 10px;
+      font-size: 16px;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
+  <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
 
-<div class="player-container">
-  <video id="video" controls></video>
+  <select id="qualitySelect">
+    <option value="1">Quality 1 (Low)</option>
+    <option value="2">Quality 2 (Medium)</option>
+    <option value="3">Quality 3 (High)</option>
+  </select>
 
-  <div class="controls">
-    <button onclick="seekBackward()">⏪ 10s</button>
-    <button onclick="seekForward()">10s ⏩</button>
-    <select id="speed" onchange="changeSpeed(this.value)">
-      <option value="0.5">0.5x</option>
-      <option value="1" selected>1x</option>
-      <option value="1.5">1.5x</option>
-      <option value="2">2x</option>
-    </select>
-    <button onclick="goLive()">🔴 Go Live</button>
-    <select id="qualitySelect"></select>
-  </div>
-</div>
+  <button id="speedBtn">Speed: 1x</button>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<script>
-  const video = document.getElementById('video');
-  const qualitySelect = document.getElementById('qualitySelect');
-  const urlParams = new URLSearchParams(window.location.search);
-  const videoSrc = urlParams.get("url");
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script>
+    const player = videojs('player');
+    const speedBtn = document.getElementById('speedBtn');
+    const qualitySelect = document.getElementById('qualitySelect');
 
-  if (!videoSrc) {
-    alert("No video URL provided in query (?url=...)");
-  }
+    const baseUrl = "{{ url }}";
+    if (!baseUrl) {
+      alert("No video URL provided in query param `url`");
+    }
 
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(videoSrc);
-    hls.attachMedia(video);
+    const speeds = [1, 1.5, 2];
+    let speedIndex = 0;
 
-    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-      video.play();
+    function getQualityUrl(base, q) {
+      // Replace index.m3u8 with index_q.m3u8
+      return base.replace('index.m3u8', `index_${q}.m3u8`);
+    }
 
-      hls.levels.forEach((level, i) => {
-        const option = document.createElement('option');
-        option.value = i;
-        option.text = `${level.height}p`;
-        qualitySelect.appendChild(option);
-      });
+    function loadVideo() {
+      const q = qualitySelect.value;
+      const finalUrl = getQualityUrl(baseUrl, q);
+      player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+      player.play();
+    }
 
-      qualitySelect.onchange = function () {
-        hls.currentLevel = parseInt(this.value);
-      };
+    qualitySelect.addEventListener('change', () => {
+      loadVideo();
     });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = videoSrc;
-    video.addEventListener('loadedmetadata', function () {
-      video.play();
+
+    speedBtn.addEventListener('click', () => {
+      speedIndex = (speedIndex + 1) % speeds.length;
+      player.playbackRate(speeds[speedIndex]);
+      speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
     });
-  }
 
-  function seekBackward() { video.currentTime -= 10; }
-  function seekForward() { video.currentTime += 10; }
-  function changeSpeed(rate) { video.playbackRate = parseFloat(rate); }
-  function goLive() { video.currentTime = video.duration; }
-</script>
-
+    loadVideo();
+  </script>
 </body>
 </html>
 """
 
-@app.route('/')
-def home():
-    return render_template_string(HTML_TEMPLATE)
+@app.route("/")
+def index():
+    url = request.args.get("url", "")
+    return render_template_string(HTML, url=url)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(debug=True)
 	
