@@ -7,7 +7,7 @@ HTML = """
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>M3U8 Player</title>
+  <title> Aarambh Batch Class 10th By Team Flower</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <style>
@@ -46,10 +46,30 @@ HTML = """
     select {
       background: #333;
     }
+    .watermark {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 16px;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 10px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .player-container {
+      position: relative;
+      width: 80vw;
+      max-width: 900px;
+    }
   </style>
 </head>
 <body>
-  <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
+  <div class="player-container">
+    <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
+    <div class="watermark">Powered by Team Flower Dm @Teamflowersupportfree_bot </div>
+  </div>
 
   <div class="controls">
     <button id="backwardBtn">⏪ 10s</button>
