@@ -6,9 +6,9 @@ HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Aarambh Live By Team Flower</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <title>M3U8 Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <style>
     body {
@@ -27,51 +27,59 @@ HTML = """
       height: 45vw;
       max-height: 506px;
     }
-    #speedBtn {
+    .controls {
       margin-top: 10px;
-      background: #222;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    #qualitySelect {
-      margin-top: 10px;
-      font-size: 16px;
-      padding: 5px 10px;
+    button, select {
+      background: #222;
+      color: white;
+      border: none;
+      padding: 10px 15px;
       border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    select {
+      background: #333;
     }
   </style>
 </head>
 <body>
   <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
 
-  <select id="qualitySelect">
-    <option value="1">Quality 1 (Low)</option>
-    <option value="2">Quality 2 (Medium)</option>
-    <option value="3">Quality 3 (High)</option>
-  </select>
-
-  <button id="speedBtn">Speed: 1x</button>
+  <div class="controls">
+    <button id="backwardBtn">⏪ 10s</button>
+    <button id="speedBtn">Speed: 1x</button>
+    <button id="forwardBtn">⏩ 10s</button>
+    <select id="qualitySelect">
+      <option value="1">240p</option>
+      <option value="2">360p</option>
+      <option value="3">480p</option>
+      <option value="5">720p</option>
+    </select>
+  </div>
 
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
   <script>
     const player = videojs('player');
     const speedBtn = document.getElementById('speedBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const backwardBtn = document.getElementById('backwardBtn');
     const qualitySelect = document.getElementById('qualitySelect');
 
     const baseUrl = "{{ url }}";
     if (!baseUrl) {
-      alert("No video URL provided in query param `url`");
+      alert("No video URL provided via ?url=");
     }
 
     const speeds = [1, 1.5, 2];
     let speedIndex = 0;
 
     function getQualityUrl(base, q) {
-      // Replace index.m3u8 with index_q.m3u8
       return base.replace('index.m3u8', `index_${q}.m3u8`);
     }
 
@@ -82,14 +90,20 @@ HTML = """
       player.play();
     }
 
-    qualitySelect.addEventListener('change', () => {
-      loadVideo();
-    });
+    qualitySelect.addEventListener('change', loadVideo);
 
     speedBtn.addEventListener('click', () => {
       speedIndex = (speedIndex + 1) % speeds.length;
       player.playbackRate(speeds[speedIndex]);
       speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
+    });
+
+    forwardBtn.addEventListener('click', () => {
+      player.currentTime(player.currentTime() + 10);
+    });
+
+    backwardBtn.addEventListener('click', () => {
+      player.currentTime(player.currentTime() - 10);
     });
 
     loadVideo();
