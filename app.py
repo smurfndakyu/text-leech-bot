@@ -1,141 +1,71 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-HTML = """
+HTML = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title> Aarambh Batch Class 10th By Team Flower</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    .video-js {
-      width: 80vw;
-      max-width: 900px;
-      height: 45vw;
-      max-height: 506px;
-    }
-    .controls {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    button, select {
-      background: #222;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    select {
-      background: #333;
-    }
-    .watermark {
-      position: absolute;
-      bottom: 60px;
-      right: 20px;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 16px;
-      font-weight: bold;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 4px 10px;
-      border-radius: 4px;
-      pointer-events: none;
-    }
-    .player-container {
-      position: relative;
-      width: 80vw;
-      max-width: 900px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Aarambh Class 10th</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
-  <div class="player-container">
-    <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
-    </div>
+    <h2>Aarambh Class 10th By Team flower (Live / Recorded support)</h2>
+    <form method="POST">
+        <input type="text" name="url" placeholder="Enter .m3u8 URL" required style="width: 400px;"><br><br>
+        <input type="text" name="quality" placeholder="Optional Quality (e.g., 240, 360)"><br><br>
+        <button type="submit">Play</button>
+    </form>
 
-  <div class="controls">
-    <button id="backwardBtn">⏪ 10s</button>
-    <button id="speedBtn">Speed: 1x</button>
-    <button id="forwardBtn">⏩ 10s</button>
-    <select id="qualitySelect">
-      <option value="1">240p</option>
-      <option value="2">360p</option>
-      <option value="3">480p</option>
-      <option value="5">720p</option>
-    </select>
-  </div>
-
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script>
-    const player = videojs('player');
-    const speedBtn = document.getElementById('speedBtn');
-    const forwardBtn = document.getElementById('forwardBtn');
-    const backwardBtn = document.getElementById('backwardBtn');
-    const qualitySelect = document.getElementById('qualitySelect');
-
-    const baseUrl = "{{ url }}";
-    if (!baseUrl) {
-      alert("No video URL provided via ?url=");
-    }
-
-    const speeds = [1, 1.5, 2];
-    let speedIndex = 0;
-
-    function getQualityUrl(base, q) {
-      return base.replace('index.m3u8', `index_${q}.m3u8`);
-    }
-
-    function loadVideo() {
-      const q = qualitySelect.value;
-      const finalUrl = getQualityUrl(baseUrl, q);
-      player.src({ src: finalUrl, type: 'application/x-mpegURL' });
-      player.play();
-    }
-
-    qualitySelect.addEventListener('change', loadVideo);
-
-    speedBtn.addEventListener('click', () => {
-      speedIndex = (speedIndex + 1) % speeds.length;
-      player.playbackRate(speeds[speedIndex]);
-      speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
-    });
-
-    forwardBtn.addEventListener('click', () => {
-      player.currentTime(player.currentTime() + 10);
-    });
-
-    backwardBtn.addEventListener('click', () => {
-      player.currentTime(player.currentTime() - 10);
-    });
-
-    loadVideo();
-  </script>
+    {% if video_url %}
+        <hr>
+        <video id="video" controls width="640" height="360"></video>
+        <script>
+            var video = document.getElementById('video');
+            if(Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource("{{ video_url }}");
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED,function() {
+                    video.play();
+                });
+            }
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = "{{ video_url }}";
+                video.addEventListener('loadedmetadata',function() {
+                    video.play();
+                });
+            }
+        </script>
+        <p><b>Playing:</b> {{ video_url }}</p>
+    {% endif %}
 </body>
 </html>
-"""
+'''
 
-@app.route("/")
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    url = request.args.get("url", "")
-    return render_template_string(HTML, url=url)
+    video_url = ''
+    if request.method == 'POST':
+        raw_url = request.form['url'].strip()
+        quality = request.form.get('quality', '').strip()
 
-if __name__ == "__main__":
+        if quality:
+            # Try to convert to quality-based URL
+            try:
+                base_url = raw_url.rsplit('/', 1)[0]
+                filename = raw_url.split('/')[-1]
+                new_filename = f"{quality}p30.m3u8"
+                video_url = f"{base_url}/{new_filename}"
+            except Exception:
+                video_url = raw_url
+        else:
+            # Use the raw input URL as-is
+            video_url = raw_url
+
+    return render_template_string(HTML, video_url=video_url)
+
+if __name__ == '__main__':
     app.run(debug=True)
 	
