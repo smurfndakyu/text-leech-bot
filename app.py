@@ -1,88 +1,122 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
-HTML = '''
+HTML = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title> Aarambh Batch Class 10th By Team Flower</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>Aarambh Batch Class 10th By Team Flower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f9f9f9; }
-    video { width: 90%; max-width: 700px; margin-top: 20px; border: 1px solid #ccc; }
-    .buttons { margin: 20px; }
-    button { padding: 8px 16px; margin: 5px; font-size: 16px; }
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .video-js {
+      width: 80vw;
+      max-width: 900px;
+      height: 45vw;
+      max-height: 506px;
+    }
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button, select {
+      background: #222;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    select {
+      background: #333;
+    }
   </style>
 </head>
 <body>
+  <video-js id="player" class="video-js vjs-default-skin" controls preload="auto"></video-js>
 
-<h2>Aarambh Batch Class 10th Powered By Team Flower</h2>
+  <div class="controls">
+    <button id="backwardBtn">⏪ 10s</button>
+    <button id="speedBtn">Speed: 1x</button>
+    <button id="forwardBtn">⏩ 10s</button>
+    <select id="qualitySelect">
+      <option value="1">240p</option>
+      <option value="2">360p</option>
+      <option value="3">480p</option>
+      <option value="5">720p</option>
+    </select>
+  </div>
 
-<video id="video" controls></video>
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script>
+    const player = videojs('player');
+    const speedBtn = document.getElementById('speedBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const backwardBtn = document.getElementById('backwardBtn');
+    const qualitySelect = document.getElementById('qualitySelect');
 
-<div class="buttons">
-  <button onclick="changeQuality('240')">240p</button>
-  <button onclick="changeQuality('360')">360p</button>
-  <button onclick="changeQuality('480')">480p</button>
-  <button onclick="changeQuality('720')">720p</button>
-</div>
-
-<script>
-  const video = document.getElementById('video');
-  let hls;
-
-  const baseURL = "{{ base_url }}";
-  const startQuality = "{{ quality }}";
-  const ext = "{{ suffix }}";
-
-  function playStream(url) {
-    if (hls) {
-      hls.destroy();
+    const baseUrl = "{{ url }}";
+    if (!baseUrl) {
+      alert("No video URL provided via ?url=");
     }
 
-    hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      video.play();
+    const speeds = [1, 1.5, 2];
+    let speedIndex = 0;
+
+    function getQualityUrl(base, q) {
+      return base.replace('index.m3u8', `index_${q}.m3u8`);
+    }
+
+    function loadVideo() {
+      const q = qualitySelect.value;
+      const finalUrl = getQualityUrl(baseUrl, q);
+      player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+      player.play();
+    }
+
+    qualitySelect.addEventListener('change', loadVideo);
+
+    speedBtn.addEventListener('click', () => {
+      speedIndex = (speedIndex + 1) % speeds.length;
+      player.playbackRate(speeds[speedIndex]);
+      speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
     });
-  }
 
-  function changeQuality(q) {
-    const newUrl = `${baseURL}/${q}${ext}`;
-    playStream(newUrl);
-  }
+    forwardBtn.addEventListener('click', () => {
+      player.currentTime(player.currentTime() + 10);
+    });
 
-  // Auto-play on page load
-  window.onload = function() {
-    const initialUrl = `${baseURL}/${startQuality}${ext}`;
-    playStream(initialUrl);
-  };
-</script>
+    backwardBtn.addEventListener('click', () => {
+      player.currentTime(player.currentTime() - 10);
+    });
 
+    loadVideo();
+  </script>
 </body>
 </html>
-'''
+"""
 
-@app.route('/')
+@app.route("/")
 def index():
-    full_url = request.args.get('url', '').strip()
-    quality = request.args.get('quality', '360').strip()
+    url = request.args.get("url", "")
+    return render_template_string(HTML, url=url)
 
-    if not full_url:
-        return "❌ URL not provided. Use ?url=...&quality=360"
-
-    try:
-        base_url = full_url.rsplit('/', 1)[0]
-        suffix = full_url.rsplit('/', 1)[-1].replace(quality, '{quality}')
-        suffix = suffix.replace('{quality}', '')  # remove quality, keep postfix like "p30.m3u8"
-    except Exception:
-        return "❌ Invalid URL format"
-
-    return render_template_string(HTML, base_url=base_url, quality=quality, suffix=suffix)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
 	
