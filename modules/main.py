@@ -160,7 +160,7 @@ async def account_login(bot: Client, m: Message):
     else:
         MR = raw_text3
    
-    await editable.edit("🌄 Now send the Thumb url\nEg » https://graph.org/file/419c60736fbac058c9e50.jpg\n\n Or if don't want thumbnail send = no")
+    await editable.edit("🌄 Now send the Thumb url")
     input6 = message = await bot.listen(editable.chat.id)
     raw_text6 = input6.text
     await input6.delete(True)
@@ -227,7 +227,7 @@ async def account_login(bot: Client, m: Message):
                 
                 elif ".pdf" in url:
                     try:
-                        Show = f"❊⟱ ⥥ 🄳🄾🅆🄽🄻🄾🄰🄳🄸🄽🄶⬇️⬇️... »⟱❊ »\n\n📝 𝐍𝐚𝐦𝐞 » `{name}\n`\n\n**🔗 𝐔𝐑𝐋 »** `Mat Dekh`"
+                        Show = f"❊⟱ ⥥ 🄳🄾🅆🄽🄻🄾🄰🄳🄸🄽🄶⬇️⬇️ PDF ... »⟱❊ »\n\n📝 𝐍𝐚𝐦𝐞 » `{name}\n`\n\n**🔗 𝐔𝐑𝐋 »** `Mat Dekh`"
                         prog = await m.reply_text(Show)
                         cmd = f'yt-dlp -o "{name}.pdf" "{url}"'
                         download_cmd = f"{cmd} -R 25 --fragment-retries 25"
