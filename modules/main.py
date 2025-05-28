@@ -99,6 +99,8 @@ async def account_login(bot: Client, m: Message):
     await input.delete(True)
 
     thread_id = getattr(m, "message_thread_id", None)
+    channel_id = -1002372038542  # add -100 prefix for channel ID
+    thread_id = 7
 
     path = f"./downloads/{m.chat.id}"
 
