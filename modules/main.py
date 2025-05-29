@@ -210,7 +210,7 @@ async def account_login(bot: Client, m: Message):
                 ytf = f"b[height<={raw_text2}]/bv[height<={raw_text2}]+ba/b/bv+ba"
 
             if "stream.pwjarvis.app" in url:
-                cmd = f'yt-dlp -f "{ytf}" --download-sections "*14:" "{url}" -o "{name}.mp4"'
+                cmd = f'yt-dlp -f "{ytf}" --download-sections "*14.0-" "{url}" -o "{name}.mp4"'
             elif "jw-prod" in url:
                 cmd = f'yt-dlp -o "{name}.mp4" "{url}"'
             else:
