@@ -209,11 +209,13 @@ async def account_login(bot: Client, m: Message):
             else:
                 ytf = f"b[height<={raw_text2}]/bv[height<={raw_text2}]+ba/b/bv+ba"
 
-            if "jw-prod" in url:
+            if "stream.pwjarvis.app" in url:
+                cmd = f'yt-dlp -f "{ytf}" --download-sections "*14:" "{url}" -o "{name}.mp4"'
+            elif "jw-prod" in url:
                 cmd = f'yt-dlp -o "{name}.mp4" "{url}"'
             else:
                 cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
-
+    
             try:
                 cc = f'**[ 🎥 ] Vid_ID:** {str(count).zfill(3)}.** {𝗻𝗮𝗺𝗲𝟭}.mkv**'
                 cc1 = f'**[ 📁 ] Pdf_ID:** {str(count).zfill(3)}. {𝗻𝗮𝗺𝗲𝟭}.pdf**'
