@@ -82,7 +82,7 @@ VIDEO_TEMPLATE = """
       player.src({ src: finalUrl, type: 'application/x-mpegURL' });
       player.ready(function () {
         player.one('loadedmetadata', function () {
-          player.currentTime(14);
+          player.currentTime(5);
         });
         player.play();
       });
