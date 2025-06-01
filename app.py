@@ -65,47 +65,70 @@ VIDEO_TEMPLATE = """
 
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
   <script>
-    const player = videojs('player');
-    const speedBtn = document.getElementById('speedBtn');
-    const forwardBtn = document.getElementById('forwardBtn');
-    const backwardBtn = document.getElementById('backwardBtn');
-    const qualitySelect = document.getElementById('qualitySelect');
-    const baseUrl = '{{ url }}'.replace(/\d{3,4}\/main.m3u8/, '');
-    const videoId = '{{ id }}';
+  const player = videojs('player');
+  const speedBtn = document.getElementById('speedBtn');
+  const forwardBtn = document.getElementById('forwardBtn');
+  const backwardBtn = document.getElementById('backwardBtn');
+  const qualitySelect = document.getElementById('qualitySelect');
+  const baseUrl = '{{ url }}'.replace(/\d{3,4}\/main.m3u8/, '');
+  const videoId = '{{ id }}';
 
-    const speeds = [1, 1.5, 2];
-    let speedIndex = 0;
+  const speeds = [1, 1.5, 2];
+  let speedIndex = 0;
+  let seekingLock = false;
 
-    function loadVideo() {
-      const quality = qualitySelect.value;
-      const finalUrl = `${baseUrl}${quality}/main.m3u8`;
-      player.src({ src: finalUrl, type: 'application/x-mpegURL' });
-      player.ready(function () {
-        player.one('loadedmetadata', function () {
-          player.currentTime(5);
-        });
-        player.play();
+  function loadVideo() {
+    const quality = qualitySelect.value;
+    const finalUrl = `${baseUrl}${quality}/main.m3u8`;
+    player.src({ src: finalUrl, type: 'application/x-mpegURL' });
+
+    player.ready(function () {
+      player.one('loadedmetadata', function () {
+        player.currentTime(5);  // Always jump to 5s at load
       });
+      player.play();
+    });
+  }
+
+  qualitySelect.addEventListener('change', loadVideo);
+
+  speedBtn.addEventListener('click', () => {
+    speedIndex = (speedIndex + 1) % speeds.length;
+    player.playbackRate(speeds[speedIndex]);
+    speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
+  });
+
+  forwardBtn.addEventListener('click', () => {
+    player.currentTime(player.currentTime() + 10);
+  });
+
+  backwardBtn.addEventListener('click', () => {
+    const newTime = player.currentTime() - 10;
+    player.currentTime(newTime < 5 ? 5 : newTime);
+  });
+
+  // Lock out seeking below 5s
+  player.on('seeking', function () {
+    if (seekingLock) return; // Avoid infinite loop
+    const ct = player.currentTime();
+    if (ct < 5) {
+      seekingLock = true;
+      player.currentTime(5);
+      setTimeout(() => seekingLock = false, 200);
     }
+  });
 
-    qualitySelect.addEventListener('change', loadVideo);
-    speedBtn.addEventListener('click', () => {
-      speedIndex = (speedIndex + 1) % speeds.length;
-      player.playbackRate(speeds[speedIndex]);
-      speedBtn.textContent = 'Speed: ' + speeds[speedIndex] + 'x';
-    });
-    forwardBtn.addEventListener('click', () => player.currentTime(player.currentTime() + 10));
-    backwardBtn.addEventListener('click', () => {
-      const newTime = player.currentTime() - 10;
-      player.currentTime(newTime < 5 ? 5 : newTime);
-    });
+  // Force back to 5s if autoplay goes to 0
+  player.on('timeupdate', function () {
+    if (player.currentTime() < 5 && !seekingLock) {
+      seekingLock = true;
+      player.currentTime(5);
+      setTimeout(() => seekingLock = false, 200);
+    }
+  });
 
-    player.on('seeking', function () {
-      if (player.currentTime() < 5) player.currentTime(5);
-    });
-
-    loadVideo();
-  </script>
+  loadVideo();
+</script>
 </body>
 </html>
 """
