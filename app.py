@@ -76,6 +76,7 @@ VIDEO_TEMPLATE = """
   const speeds = [1, 1.5, 2];
   let speedIndex = 0;
   let seekingLock = false;
+  const minTime = 14; // ⬅️ Change time lock here
 
   function loadVideo() {
     const quality = qualitySelect.value;
@@ -84,7 +85,7 @@ VIDEO_TEMPLATE = """
 
     player.ready(function () {
       player.one('loadedmetadata', function () {
-        player.currentTime(5);  // Always jump to 5s at load
+        player.currentTime(minTime);  // Always jump to 14s at load
       });
       player.play();
     });
@@ -104,25 +105,25 @@ VIDEO_TEMPLATE = """
 
   backwardBtn.addEventListener('click', () => {
     const newTime = player.currentTime() - 10;
-    player.currentTime(newTime < 5 ? 5 : newTime);
+    player.currentTime(newTime < minTime ? minTime : newTime);
   });
 
-  // Lock out seeking below 5s
+  // Lock out seeking below 14s
   player.on('seeking', function () {
-    if (seekingLock) return; // Avoid infinite loop
+    if (seekingLock) return;
     const ct = player.currentTime();
-    if (ct < 5) {
+    if (ct < minTime) {
       seekingLock = true;
-      player.currentTime(5);
+      player.currentTime(minTime);
       setTimeout(() => seekingLock = false, 200);
     }
   });
 
-  // Force back to 5s if autoplay goes to 0
+  // Force player to jump to 14s if it starts before
   player.on('timeupdate', function () {
-    if (player.currentTime() < 5 && !seekingLock) {
+    if (player.currentTime() < minTime && !seekingLock) {
       seekingLock = true;
-      player.currentTime(5);
+      player.currentTime(minTime);
       setTimeout(() => seekingLock = false, 200);
     }
   });
