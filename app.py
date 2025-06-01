@@ -97,11 +97,11 @@ VIDEO_TEMPLATE = """
     forwardBtn.addEventListener('click', () => player.currentTime(player.currentTime() + 10));
     backwardBtn.addEventListener('click', () => {
       const newTime = player.currentTime() - 10;
-      player.currentTime(newTime < 14 ? 14 : newTime);
+      player.currentTime(newTime < 5 ? 5 : newTime);
     });
 
     player.on('seeking', function () {
-      if (player.currentTime() < 14) player.currentTime(14);
+      if (player.currentTime() < 5) player.currentTime(14);
     });
 
     loadVideo();
