@@ -101,7 +101,7 @@ VIDEO_TEMPLATE = """
     });
 
     player.on('seeking', function () {
-      if (player.currentTime() < 5) player.currentTime(14);
+      if (player.currentTime() < 5) player.currentTime(5);
     });
 
     loadVideo();
